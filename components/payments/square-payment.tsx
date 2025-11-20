@@ -1,6 +1,6 @@
 'use client';
 
-import { SquarePaymentsForm, CreditCard } from 'react-square-web-payments-sdk';
+import { PaymentForm, CreditCard } from 'react-square-web-payments-sdk';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { createSquarePayment } from '@/lib/payments/square';
@@ -68,7 +68,7 @@ export function SquarePayment({
 
   return (
     <div className="w-full">
-      <SquarePaymentsForm
+      <PaymentForm
         applicationId={process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || ''}
         locationId={process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID || ''}
         cardTokenizeResponseReceived={handleCardTokenizeResponse}
@@ -118,7 +118,7 @@ export function SquarePayment({
             )}
           </button>
         </div>
-      </SquarePaymentsForm>
+      </PaymentForm>
 
       <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">

@@ -19,8 +19,8 @@ const contactSchema = z.object({
   company: z.string().optional(),
   subject: z.string().min(5, 'Subject must be at least 5 characters'),
   message: z.string().min(20, 'Message must be at least 20 characters'),
-  newsletter: z.boolean().default(false),
-  smsOptIn: z.boolean().default(false),
+  newsletter: z.boolean().optional(),
+  smsOptIn: z.boolean().optional(),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -41,6 +41,10 @@ export function ContactSection() {
     reset,
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
+    defaultValues: {
+      newsletter: false,
+      smsOptIn: false,
+    },
   });
 
   const onSubmit = async (data: ContactFormData) => {

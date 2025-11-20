@@ -9,15 +9,17 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Server client for App Router
-export const createServerSupabaseClient = () =>
-  createServerClient(supabaseUrl, supabaseAnonKey, {
+export const createServerSupabaseClient = () => {
+  const cookiesStore = cookies();
+  
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {
-        return cookies().get(name)?.value;
+        return (cookiesStore as any).get(name)?.value;
       },
       set(name: string, value: string, options: any) {
         try {
-          cookies().set({ name, value, ...options });
+          (cookiesStore as any).set({ name, value, ...options });
         } catch (error) {
           // The `set` method was called from a Server Component.
           // This can be ignored if you have middleware refreshing
@@ -26,7 +28,7 @@ export const createServerSupabaseClient = () =>
       },
       remove(name: string, options: any) {
         try {
-          cookies().set({ name, value: '', ...options });
+          (cookiesStore as any).set({ name, value: '', ...options });
         } catch (error) {
           // The `delete` method was called from a Server Component.
           // This can be ignored if you have middleware refreshing
@@ -35,6 +37,7 @@ export const createServerSupabaseClient = () =>
       },
     },
   });
+};
 
 // Admin client (server-side only)
 export const createAdminSupabaseClient = () => {

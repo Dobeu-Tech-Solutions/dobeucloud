@@ -14,6 +14,10 @@ if (!cached) {
 }
 
 async function dbConnect() {
+  if (!cached) {
+    cached = global.mongoose = { conn: null, promise: null };
+  }
+  
   if (cached.conn) {
     return cached.conn;
   }
@@ -24,19 +28,17 @@ async function dbConnect() {
       ...options,
     };
 
-    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
-      return mongoose;
-    });
+    cached!.promise = mongoose.connect(uri, opts);
   }
 
   try {
-    cached.conn = await cached.promise;
+    cached!.conn = await cached!.promise;
   } catch (e) {
-    cached.promise = null;
+    cached!.promise = null;
     throw e;
   }
 
-  return cached.conn;
+  return cached!.conn;
 }
 
 export default dbConnect;
@@ -44,7 +46,7 @@ export default dbConnect;
 // Global type augmentation for cached mongoose
 declare global {
   var mongoose: {
-    conn: typeof mongoose | null;
-    promise: Promise<typeof mongoose> | null;
-  };
+    conn: any | null;
+    promise: Promise<any> | null;
+  } | undefined;
 }

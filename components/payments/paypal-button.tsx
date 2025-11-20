@@ -89,7 +89,7 @@ export function PayPalButton({
           onError?.(err);
         }}
         onCancel={() => {
-          toast.info('Payment cancelled');
+          toast('Payment cancelled', { icon: 'ℹ️' });
           onCancel?.();
         }}
         disabled={isProcessing}

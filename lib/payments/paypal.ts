@@ -1,6 +1,6 @@
-import { PayPalScriptOptions } from '@paypal/react-paypal-js';
+import { ReactPayPalScriptOptions } from '@paypal/react-paypal-js';
 
-export const paypalOptions: PayPalScriptOptions = {
+export const paypalOptions: ReactPayPalScriptOptions = {
   clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'test',
   currency: 'USD',
   intent: 'capture',

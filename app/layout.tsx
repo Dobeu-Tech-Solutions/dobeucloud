@@ -5,6 +5,8 @@ import { Providers } from '@/components/providers';
 import { IntercomProvider } from '@/components/intercom-provider';
 import { ApolloScript } from '@/components/apollo-script';
 import { AnalyticsProvider } from '@/components/analytics-provider';
+import { PerformanceMonitor } from '@/components/performance-monitor';
+import { GoogleAnalytics } from '@/components/google-analytics';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -48,11 +50,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <ApolloScript />
+        <GoogleAnalytics />
       </head>
       <body className={inter.className}>
         <Providers>
           <AnalyticsProvider>
             <IntercomProvider>
+              <PerformanceMonitor />
               {children}
             </IntercomProvider>
           </AnalyticsProvider>
