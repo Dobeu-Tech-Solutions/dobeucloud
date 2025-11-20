@@ -40,7 +40,7 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
   }, [supabase.auth]);
 
   useAnalytics(user?.id);
-  useApolloTracking(user);
+  useApolloTracking(user || undefined);
 
   return <>{children}</>;
 }

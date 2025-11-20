@@ -22,8 +22,8 @@ const registerSchema = z.object({
   confirmPassword: z.string(),
   phone: z.string().optional(),
   company: z.string().optional(),
-  newsletter: z.boolean().default(false),
-  smsOptIn: z.boolean().default(false),
+  newsletter: z.boolean(),
+  smsOptIn: z.boolean(),
   termsAccepted: z.literal(true).refine((val) => val === true, {
     message: 'You must accept the terms and conditions',
   }),
@@ -45,6 +45,10 @@ export default function RegisterPage() {
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      newsletter: false,
+      smsOptIn: false,
+    },
   });
 
   const onSubmit = async (data: RegisterFormData) => {

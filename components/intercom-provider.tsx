@@ -25,16 +25,17 @@ export function IntercomProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any).Intercom) {
       // This will be updated when we implement authentication
-      const user = null; // TODO: Get user from auth context
+      // TODO: Get user from auth context and update Intercom
       
-      if (user) {
-        (window as any).Intercom('update', {
-          user_id: user.id,
-          name: user.name,
-          email: user.email,
-          created_at: Math.floor(new Date(user.createdAt).getTime() / 1000),
-        });
-      }
+      // Example code for when user is available:
+      // if (user) {
+      //   (window as any).Intercom('update', {
+      //     user_id: user.id,
+      //     name: user.name,
+      //     email: user.email,
+      //     created_at: Math.floor(new Date(user.createdAt).getTime() / 1000),
+      //   });
+      // }
     }
   }, []);
 

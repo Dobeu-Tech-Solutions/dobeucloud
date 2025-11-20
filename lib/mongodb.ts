@@ -1,10 +1,8 @@
 import mongoose from 'mongoose';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
-}
-
-const uri = process.env.MONGODB_URI;
+// MongoDB URI will be set in Netlify environment variables
+// Using the provided connection string
+const uri = process.env.MONGODB_URI || 'mongodb+srv://jeremyw_db_user:4l7pQxun7GnBnSUc@cluster0.pqf8x5.mongodb.net/dobeucloud?retryWrites=true&w=majority';
 const options: mongoose.ConnectOptions = {
   maxPoolSize: 10,
 };

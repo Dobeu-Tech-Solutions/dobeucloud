@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     // Add IP address from headers
     metadata.ip = request.headers.get('x-forwarded-for') || 
                   request.headers.get('x-real-ip') || 
-                  request.ip;
+                  undefined;
 
     // Create analytics entry
     await Analytics.create({
