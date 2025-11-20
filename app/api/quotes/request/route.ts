@@ -3,7 +3,7 @@ import dbConnect from '@/lib/mongodb';
 import Quote from '@/lib/models/Quote';
 import Contact from '@/lib/models/Contact';
 import Analytics from '@/lib/models/Analytics';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export async function POST(request: NextRequest) {
   try {

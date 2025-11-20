@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { createBrowserClient, createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -11,10 +11,6 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-// Browser client
-export const createBrowserSupabaseClient = () =>
-  createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 // Server client for App Router
 export const createServerSupabaseClient = () =>
@@ -57,6 +53,3 @@ export const createAdminSupabaseClient = () => {
     },
   });
 };
-
-// Types for Supabase Auth
-export type SupabaseClient = ReturnType<typeof createBrowserSupabaseClient>;

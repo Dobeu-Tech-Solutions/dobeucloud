@@ -3,7 +3,7 @@
 import { useAnalytics } from '@/hooks/use-analytics';
 import { useApolloTracking } from '@/hooks/use-apollo-tracking';
 import { ReactNode, useEffect, useState } from 'react';
-import { createBrowserSupabaseClient } from '@/lib/supabase';
+import { createBrowserSupabaseClient } from '@/lib/supabase-client';
 
 interface AnalyticsProviderProps {
   children: ReactNode;

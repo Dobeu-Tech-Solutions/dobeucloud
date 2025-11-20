@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { createBrowserSupabaseClient } from '@/lib/supabase';
+import { createBrowserSupabaseClient } from '@/lib/supabase-client';
 import { Button } from '@/components/ui/button';
 import { UserPlus, Mail, Lock, User, Phone, Building2 } from 'lucide-react';
 
@@ -24,8 +24,8 @@ const registerSchema = z.object({
   company: z.string().optional(),
   newsletter: z.boolean().default(false),
   smsOptIn: z.boolean().default(false),
-  termsAccepted: z.literal(true, {
-    errorMap: () => ({ message: 'You must accept the terms and conditions' }),
+  termsAccepted: z.literal(true).refine((val) => val === true, {
+    message: 'You must accept the terms and conditions',
   }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
