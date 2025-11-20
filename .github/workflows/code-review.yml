@@ -1,0 +1,130 @@
+name: Automated Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Code Quality Checks
+        id: code-quality
+        run: |
+          echo "## Code Quality Report" >> $GITHUB_STEP_SUMMARY
+          
+          # Check for console.log statements
+          CONSOLE_LOGS=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | xargs grep -n "console\\.log" 2>/dev/null || true)
+          if [ ! -z "$CONSOLE_LOGS" ]; then
+            echo "⚠️  **Found console.log statements:**" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$CONSOLE_LOGS" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for TODO comments
+          TODOS=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | xargs grep -n "TODO" 2>/dev/null || true)
+          if [ ! -z "$TODOS" ]; then
+            echo "📝 **TODO comments found:**" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$TODOS" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+  bundle-analysis:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and analyze bundle
+        run: |
+          npm run build
+          
+          # Generate bundle analysis
+          echo "## Bundle Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "### Page Sizes" >> $GITHUB_STEP_SUMMARY
+          find .next -name "*.js" -type f -exec du -h {} + | sort -hr | head -20 >> $GITHUB_STEP_SUMMARY
+
+  ai-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate AI Review Summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const diffUrl = pr.diff_url;
+            
+            // Get the diff
+            const { data: diff } = await github.request('GET ' + diffUrl);
+            
+            // Extract changed files summary
+            const filesChanged = diff.match(/^diff --git/gm)?.length || 0;
+            const additions = diff.match(/^\+[^+]/gm)?.length || 0;
+            const deletions = diff.match(/^-[^-]/gm)?.length || 0;
+            
+            const comment = `## 🤖 Automated Review Summary
+            
+            ### 📊 Change Statistics
+            - **Files Changed:** ${filesChanged}
+            - **Lines Added:** ${additions}
+            - **Lines Deleted:** ${deletions}
+            
+            ### 🔍 Review Checklist
+            - [ ] All tests passing
+            - [ ] No console.log statements
+            - [ ] TypeScript types properly defined
+            - [ ] Responsive design considered
+            - [ ] Security best practices followed
+            - [ ] Performance optimizations applied
+            
+            ### 💡 Recommendations
+            Please ensure:
+            1. All new components have proper TypeScript interfaces
+            2. API routes include error handling
+            3. Database queries are optimized with proper indexes
+            4. Sensitive data is not exposed in client-side code
+            5. Accessibility standards are met (WCAG 2.1 AA)
+            `;
+            
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: pr.number,
+              body: comment
+            });

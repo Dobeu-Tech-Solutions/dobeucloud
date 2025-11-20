@@ -1,0 +1,116 @@
+name: Database Integrity Check
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Run daily at 2 AM UTC
+  workflow_dispatch:
+
+jobs:
+  mongodb-health:
+    name: MongoDB Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run MongoDB health check
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        run: |
+          node -e "
+          const mongoose = require('mongoose');
+          
+          async function checkDB() {
+            try {
+              await mongoose.connect(process.env.MONGODB_URI);
+              console.log('✅ MongoDB connection successful');
+              
+              // Check collections
+              const collections = await mongoose.connection.db.listCollections().toArray();
+              console.log('📊 Collections:', collections.map(c => c.name));
+              
+              // Check indexes
+              for (const collection of collections) {
+                const indexes = await mongoose.connection.db.collection(collection.name).indexes();
+                console.log(\`📍 Indexes for \${collection.name}:\`, indexes.length);
+              }
+              
+              await mongoose.disconnect();
+              process.exit(0);
+            } catch (error) {
+              console.error('❌ Database check failed:', error);
+              process.exit(1);
+            }
+          }
+          
+          checkDB();
+          "
+
+  data-validation:
+    name: Validate Data Integrity
+    runs-on: ubuntu-latest
+    needs: mongodb-health
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run data validation checks
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        run: |
+          node -e "
+          const mongoose = require('mongoose');
+          
+          async function validateData() {
+            try {
+              await mongoose.connect(process.env.MONGODB_URI);
+              
+              // Check for orphaned records
+              const db = mongoose.connection.db;
+              
+              // Check invoices reference valid users
+              const orphanedInvoices = await db.collection('invoices').aggregate([
+                {
+                  \$lookup: {
+                    from: 'users',
+                    localField: 'client',
+                    foreignField: '_id',
+                    as: 'clientData'
+                  }
+                },
+                { \$match: { clientData: { \$size: 0 } } },
+                { \$count: 'orphaned' }
+              ]).toArray();
+              
+              if (orphanedInvoices.length > 0) {
+                console.warn('⚠️  Found orphaned invoices:', orphanedInvoices[0].orphaned);
+              } else {
+                console.log('✅ No orphaned invoices found');
+              }
+              
+              await mongoose.disconnect();
+              process.exit(0);
+            } catch (error) {
+              console.error('❌ Data validation failed:', error);
+              process.exit(1);
+            }
+          }
+          
+          validateData();
+          "
