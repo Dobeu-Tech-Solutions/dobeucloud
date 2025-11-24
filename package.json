@@ -53,7 +53,7 @@
     "swr": "^2.3.6",
     "tailwind-merge": "^3.4.0",
     "web-vitals": "^5.1.0",
-    "zod": "^4.1.12",
+    "zod": "^4.1.13",
     "@netlify/plugin-nextjs": "^5.14.7"
   },
   "devDependencies": {
